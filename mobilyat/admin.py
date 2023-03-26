@@ -32,9 +32,9 @@ class ProfileAdmin(admin.ModelAdmin):
         model = Purchase
 
 
-@admin.register(ItemPrice)
+@admin.register(Item)
 class CustomerPagination(admin.ModelAdmin):
-    list_display = ('item', 'price_list', 'item_price')
+    list_display = ('name', 'price_list', 'price')
     # list_filter = ("client_name", "status", "date_created")
     # list_display_links = ('client_name',)
     # list_per_page = 20
@@ -51,14 +51,14 @@ class CustomerPagination(admin.ModelAdmin):
 
 @admin.register(PurchaseItem)
 class CustomerPagination(admin.ModelAdmin):
-    list_display = ('item', 'qty', 'item_price', 'total_amt', 'pur_date')
+    list_display = ('item', 'qty', 'total_amt', 'pur_date')
 
     readonly_fields = ['total_amt', ]
 
 
 @admin.register(SaleItem)
 class CustomerPagination(admin.ModelAdmin):
-    list_display = ('item', 'qty', 'item_price', 'total_amt', 'sale_date')
+    list_display = ('item', 'qty', 'total_amt', 'sale_date')
 
     readonly_fields = ['total_amt', ]
 
@@ -72,10 +72,9 @@ class CustomerPagination(admin.ModelAdmin):
 admin.site.register(Vendor)
 admin.site.register(Unit)
 
-admin.site.register(ItemDetail)
 
 admin.site.register(Customer)
-admin.site.register(Price_List)
+# admin.site.register(Price_List)
 admin.site.register(Payment_Entry)
 
 admin.site.site_header = "Siavan Mobilyat Admin"
