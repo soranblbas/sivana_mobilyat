@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.html import format_html
+
 from .models import *
 
 
@@ -8,6 +10,11 @@ class SalesItem(admin.TabularInline):
     model = SaleItem
     extra = 1
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "item":
+            kwargs["queryset"] = Item.objects.exclude(price_list='شراء')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 @admin.register(SaleInvoice)
 class ProfileAdmin(admin.ModelAdmin):
@@ -16,12 +23,21 @@ class ProfileAdmin(admin.ModelAdmin):
     class Meta:
         model = SaleInvoice
 
-    list_display = ('invoice_number', 'customer_name')
+    # def show_sales_total(self, obj):
+    #     total_sales = sum(sale.total_amt for sale in obj.sales.all())
+    #     return format_html('<b>{}</b>', total_sales)
+
+    list_display = ('invoice_number', 'customer_name', 'total_sales_amount', 'date')
 
 
 class PurchasesItem(admin.TabularInline):
     model = PurchaseItem
     extra = 1
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "item":
+            kwargs["queryset"] = Item.objects.exclude(price_list__in=['مفرد', 'جملة'])
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(Purchase)
@@ -30,6 +46,8 @@ class ProfileAdmin(admin.ModelAdmin):
 
     class Meta:
         model = Purchase
+
+    list_display = ('invoice_number', 'vendor', 'total_purchase_amount', 'date')
 
 
 @admin.register(Item)
@@ -71,7 +89,6 @@ class CustomerPagination(admin.ModelAdmin):
 
 admin.site.register(Vendor)
 admin.site.register(Unit)
-
 
 admin.site.register(Customer)
 # admin.site.register(Price_List)

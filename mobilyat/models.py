@@ -55,6 +55,11 @@ class SaleInvoice(models.Model):
             self.invoice_number = secrets.token_hex(4).upper()
         super().save(*args, **kwargs)
 
+    def total_sales_amount(self):
+        total_sales_amount = self.saleitem_set.aggregate(total=Sum('total_amt'))['total']
+        return total_sales_amount or 0
+
+
     def __str__(self):
         return str(self.invoice_number)
 
@@ -171,6 +176,10 @@ class Purchase(models.Model):
     def __str__(self):
         return f' {self.invoice_number}'
 
+    def total_purchase_amount(self):
+        total_purchase_amount = self.purchaseitem_set.aggregate(total=Sum('total_amt'))['total']
+        return total_purchase_amount or 0
+
 
 # payment entry
 
@@ -209,6 +218,7 @@ class SaleItem(models.Model):
             pur_qty=None,
             sale_qty=self.qty,
             total_bal_qty=totalBal
+
         )
 
     def clean(self):
