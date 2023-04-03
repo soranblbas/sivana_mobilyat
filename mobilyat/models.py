@@ -205,7 +205,19 @@ class SaleItem(models.Model):
 
         super(SaleItem, self).save(*args, **kwargs)
 
-        inventory = Inventory.objects.filter(item=self.item).order_by('-id').first()
+        try:
+            inventory = Inventory.objects.filter(item__name=self.item.name).latest('id')
+        except Inventory.DoesNotExist:
+            raise ValueError(f"{self.item.name} is not in stock")
+
+        totalBal = inventory.total_bal_qty
+        if self.qty > totalBal:
+            raise ValueError(
+                f"Sorry, we don't have enough {self.item.name} in stock right now. "
+                f"Please reduce your sale quantity to {totalBal} or less."
+            )
+
+        inventory = Inventory.objects.filter(item__name=self.item.name).order_by('-id').first()
         if inventory:
             totalBal = inventory.total_bal_qty - self.qty
         else:
@@ -220,10 +232,10 @@ class SaleItem(models.Model):
             total_bal_qty=totalBal
 
         )
-
-    def clean(self):
-        if self.item.price_list != 'مفرد':
-            raise ValidationError('Price list should  be " مفرد or جملة"')
+    #
+    # def clean(self):
+    #     if self.item.price_list != 'مفرد':
+    #         raise ValidationError('Price list should  be " مفرد or جملة"')
 
     class Meta:
         verbose_name_plural = '9. Sales Item'

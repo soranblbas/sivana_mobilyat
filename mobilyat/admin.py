@@ -1,4 +1,8 @@
+from importlib.resources import _
+
 from django.contrib import admin
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.html import format_html
 
 from .models import *
@@ -22,6 +26,19 @@ class ProfileAdmin(admin.ModelAdmin):
 
     class Meta:
         model = SaleInvoice
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        if request.method == 'POST':
+            try:
+                return super().changeform_view(request, object_id=object_id, form_url=form_url,
+                                               extra_context=extra_context)
+            except ValueError as error:
+                self.message_user(request, _(str(error)), level='ERROR')
+                url = reverse('admin:%s_%s_change' % (self.opts.app_label, self.opts.model_name), args=[object_id])
+                return HttpResponseRedirect(url)
+        else:
+            return super().changeform_view(request, object_id=object_id, form_url=form_url, extra_context=extra_context)
+
 
     # def show_sales_total(self, obj):
     #     total_sales = sum(sale.total_amt for sale in obj.sales.all())
