@@ -63,12 +63,24 @@ WSGI_APPLICATION = "sivana_mobilyat.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'd15omfq0ve6h29',
+        'USER': 'ildazszlrqvyyr',
+        'PASSWORD': '7f03a66de3779ad6d3d0b5c9fdc31e7566f99e2c8cb2f7a1fdf58d250c2d02db',
+        'HOST': 'ec2-52-205-45-222.compute-1.amazonaws.com',
+        'PORT': '5432',
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
