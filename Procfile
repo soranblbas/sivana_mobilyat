@@ -1,0 +1,1 @@
+web: gunicorn sivana_mobilyat.wsgi
