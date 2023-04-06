@@ -1,9 +1,10 @@
-from importlib.resources import _
+# from importlib.resources import _
 
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.html import format_html
+from importlib_resources._common import _
 
 from .models import *
 
