@@ -1,1 +1,1 @@
-web: gunicorn sivana_mobilyat.wsgi
+web:gunicorn sivana_mobilyat.wsgi
