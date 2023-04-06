@@ -75,9 +75,9 @@ WSGI_APPLICATION = "sivana_mobilyat.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'd15omfq0ve6h29',
-        'USER': 'ildazszlrqvyyr',
-        'PASSWORD': '7f03a66de3779ad6d3d0b5c9fdc31e7566f99e2c8cb2f7a1fdf58d250c2d02db',
+        'NAME': 'dflbgs3u3u9k3e',
+        'USER': 'miqotxysskvzzf',
+        'PASSWORD': '6e1e06c3ddc4da5793556572479e25eb655d0710264175d754f2285db776e3b0',
         'HOST': 'ec2-52-205-45-222.compute-1.amazonaws.com',
         'PORT': '5432',
     }
