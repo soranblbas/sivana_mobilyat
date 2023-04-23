@@ -256,7 +256,7 @@ class PurchaseItem(models.Model):
         self.total_amt = self.qty * self.item.price
         super(PurchaseItem, self).save(*args, **kwargs)
 
-        inventory = Inventory.objects.filter(item=self.item).order_by('-id').first()
+        inventory = Inventory.objects.filter(item__name=self.item.name).order_by('-id').first()
         if inventory:
             totalBal = inventory.total_bal_qty + self.qty
         else:

@@ -145,6 +145,9 @@ def item_balance(request):
         sale_qty=Sum('sale_qty')
     )
     for item in items:
-        item['balance'] = item['pur_qty'] - item['sale_qty']
+        if item['pur_qty'] and item['sale_qty'] is not None:
+            item['balance'] = item['pur_qty'] - item['sale_qty']
+        else:
+            item['balance'] = item['pur_qty']
     context = {'items': items}
     return render(request, 'mobilyat/reports/item_balance.html', context)
