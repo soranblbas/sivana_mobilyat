@@ -39,12 +39,13 @@ class SaleInvoice(models.Model):
     STATUS = (
         ('مدفوع', 'مدفوع'),
         ('غير مدفوع', 'غير مدفوع'),
+        ('قسظ', 'قسظ'),
     )
     invoice_number = models.CharField(max_length=8, unique=True, editable=False)
 
     customer_name = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    piad = models.BooleanField(default='No')
-    date = models.DateTimeField()
+    status = models.CharField(max_length=10,choices=STATUS, default='مدفوع')
+    date = models.DateTimeField(verbose_name='Invoice Date')
 
     class Meta:
         verbose_name_plural = '3. Sale Invoice'
@@ -59,20 +60,21 @@ class SaleInvoice(models.Model):
         total_sales_amount = self.saleitem_set.aggregate(total=Sum('total_amt'))['total']
         return total_sales_amount or 0
 
-
+    def total_discount_amount(self):
+        total_discount_amount = self.saleitem_set.aggregate(total=Sum('discount_value'))['total']
+        return total_discount_amount or 0
     def __str__(self):
-        return str(self.invoice_number)
-
+        return f"{self.customer_name} - {self.invoice_number} - {self.total_sales_amount()}"
 
 class Payment_Entry(models.Model):
     invoice_number = models.CharField(max_length=8, unique=True, editable=False)
     sales_invoice = models.ForeignKey(SaleInvoice, on_delete=models.CASCADE)
-    customer_name = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    # customer_name = models.ForeignKey(Customer, on_delete=models.CASCADE)
 
-    paid_amount = models.FloatField(blank=True)
-    payment_date = models.DateTimeField(blank=True)
+    paid_amount = models.FloatField(blank=False)
+    payment_date = models.DateTimeField(blank=False)
     note = models.TextField(blank=True)
-    old_balance = models.DecimalField(max_digits=20, decimal_places=2, default=0, editable=False)
+    # old_balance = models.DecimalField(max_digits=20, decimal_places=2, default=0, editable=False)
 
     def save(self, *args, **kwargs):
         if not self.invoice_number:
@@ -84,7 +86,7 @@ class Payment_Entry(models.Model):
         verbose_name_plural = '8. Payment Entry'
 
     def __str__(self):
-        return str(self.sales_invoice.invoice_number)
+        return str(self.invoice_number)
 
 
 # Sales Invoice
@@ -190,18 +192,27 @@ class SaleItem(models.Model):
 
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     qty = models.PositiveSmallIntegerField(default=1)
-    # item_price = models.ForeignKey(ItemPrice, on_delete=models.CASCADE)
-    # price = models.FloatField()
+    note = models.CharField(max_length=100, blank=True)
+
+    discount_type = models.CharField(max_length=10, choices=(
+        ('amount', 'Amount'),
+        ('percentage', 'Percentage')
+    ), blank=True)
+    discount_value = models.FloatField(blank=True, null=True)
+
     total_amt = models.FloatField(editable=False, default=0)
     sale_date = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
 
-        self.total_amt = self.qty * self.item.price
-        # self.total_amt = self.total_amt - self.payment_entry.paid_amount
-        # item_in_stock = PurchaseItem.objects.filter(item=self.item).first()
-        # if item_in_stock:
-        #     raise ValidationError("Quantity cannot be greater than the stock amount.")
+        if self.discount_type == 'amount' and self.discount_value is not None:
+            discount = self.discount_value
+        elif self.discount_type == 'percentage' and self.discount_value is not None:
+            discount = self.item.price * self.discount_value / 100
+        else:
+            discount = 0
+
+        self.total_amt = (self.qty * self.item.price) - discount
 
         super(SaleItem, self).save(*args, **kwargs)
 
@@ -230,15 +241,7 @@ class SaleItem(models.Model):
             pur_qty=None,
             sale_qty=self.qty,
             total_bal_qty=totalBal
-
         )
-    #
-    # def clean(self):
-    #     if self.item.price_list != 'مفرد':
-    #         raise ValidationError('Price list should  be " مفرد or جملة"')
-
-    class Meta:
-        verbose_name_plural = '9. Sales Item'
 
 
 # Purchased Item

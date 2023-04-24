@@ -45,7 +45,7 @@ class ProfileAdmin(admin.ModelAdmin):
     #     total_sales = sum(sale.total_amt for sale in obj.sales.all())
     #     return format_html('<b>{}</b>', total_sales)
 
-    list_display = ('invoice_number', 'customer_name', 'total_sales_amount', 'date')
+    list_display = ('invoice_number', 'customer_name', 'total_sales_amount','total_discount_amount', 'date')
 
 
 class PurchasesItem(admin.TabularInline):
