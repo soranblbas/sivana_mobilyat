@@ -42,6 +42,8 @@
             <th>اسم المادة</th>
             <th>السعر</th>
             <th>العدد</th>
+            <th>نوع التخفيظ</th>
+            <th>النسبة</th>
             <th>المجموع</th>
             <th>التاريخ</th>
 
@@ -58,6 +60,8 @@
                 <td>{{ i.item }}</td>
                 <td>{{ i.item.price }}</td>
                 <td>{{ i.qty }}</td>
+                <td>{{ i.discount_type }}</td>
+                <td>{{ i.discount_value }}</td>
                 <td>{{ i.total_amt }}</td>
                 <td>{{ i.sale_date }}</td>
 
