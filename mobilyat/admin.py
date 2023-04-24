@@ -105,12 +105,18 @@ class CustomerPagination(admin.ModelAdmin):
     list_display_links = ['purchase', 'sale', ]
 
 
+@admin.register(Payment_Entry)
+class CustomerPagination(admin.ModelAdmin):
+    list_display = ('invoice_number', 'sales_invoice', 'paid_amount', 'payment_date', 'note',)
+    # list_display_links = ['purchase', 'sale', ]
+
+
 admin.site.register(Vendor)
 admin.site.register(Unit)
 
 admin.site.register(Customer)
 # admin.site.register(Price_List)
-admin.site.register(Payment_Entry)
+# admin.site.register(Payment_Entry)
 
 admin.site.site_header = "Siavan Mobilyat Admin"
 admin.site.site_title = "Siavan Mobilyat Admin Portal"
