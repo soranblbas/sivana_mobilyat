@@ -40,12 +40,13 @@ class ProfileAdmin(admin.ModelAdmin):
         else:
             return super().changeform_view(request, object_id=object_id, form_url=form_url, extra_context=extra_context)
 
-
     # def show_sales_total(self, obj):
     #     total_sales = sum(sale.total_amt for sale in obj.sales.all())
     #     return format_html('<b>{}</b>', total_sales)
 
-    list_display = ('invoice_number', 'customer_name', 'total_sales_amount','total_discount_amount', 'date')
+    list_display = (
+        'invoice_number', 'customer_name', 'total_sub_amount', 'total_discount_amount', 'total_sales_amount', 'date')
+    list_filter = ('status',)
 
 
 class PurchasesItem(admin.TabularInline):

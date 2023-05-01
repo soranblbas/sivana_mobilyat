@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Sum
 from django.utils.crypto import get_random_string
@@ -39,16 +40,17 @@ class SaleInvoice(models.Model):
     STATUS = (
         ('مدفوع', 'مدفوع'),
         ('غير مدفوع', 'غير مدفوع'),
-        ('قسظ', 'قسظ'),
+        ('قسط ', ' قسط'),
     )
-    invoice_number = models.CharField(max_length=8, unique=True, editable=False)
+    invoice_number = models.CharField(unique=True, editable=False, max_length=10)
 
     customer_name = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    status = models.CharField(max_length=10,choices=STATUS, default='مدفوع')
-    date = models.DateTimeField(verbose_name='Invoice Date')
+    status = models.CharField(max_length=10, choices=STATUS, default='مدفوع')
+    date = models.DateTimeField()
+    note = models.CharField(max_length=100, blank=True)
 
     class Meta:
-        verbose_name_plural = '3. Sale Invoice'
+        verbose_name_plural = '3. پسولەی فرۆشتن'
 
     def save(self, *args, **kwargs):
         if not self.invoice_number:
@@ -56,15 +58,21 @@ class SaleInvoice(models.Model):
             self.invoice_number = secrets.token_hex(4).upper()
         super().save(*args, **kwargs)
 
+    def __str__(self):
+        return f"{self.customer_name} - {self.invoice_number} - {self.total_sales_amount()}"
+
     def total_sales_amount(self):
         total_sales_amount = self.saleitem_set.aggregate(total=Sum('total_amt'))['total']
+        return total_sales_amount or 0
+
+    def total_sub_amount(self):
+        total_sales_amount = self.saleitem_set.aggregate(total=Sum('sub_total'))['total']
         return total_sales_amount or 0
 
     def total_discount_amount(self):
         total_discount_amount = self.saleitem_set.aggregate(total=Sum('discount_value'))['total']
         return total_discount_amount or 0
-    def __str__(self):
-        return f"{self.customer_name} - {self.invoice_number} - {self.total_sales_amount()}"
+
 
 class Payment_Entry(models.Model):
     invoice_number = models.CharField(max_length=8, unique=True, editable=False)
@@ -74,6 +82,7 @@ class Payment_Entry(models.Model):
     paid_amount = models.FloatField(blank=False)
     payment_date = models.DateTimeField(blank=False)
     note = models.TextField(blank=True)
+
     # old_balance = models.DecimalField(max_digits=20, decimal_places=2, default=0, editable=False)
 
     def save(self, *args, **kwargs):
@@ -126,36 +135,6 @@ class Item(models.Model):
         return f"{self.name} - {self.price} - {self.price_list}"
 
 
-# class Price_List(models.Model):
-#     price_list = models.CharField(max_length=50, blank=True)
-#
-#     def __str__(self):
-#         return str(self.price_list)
-#
-#     class Meta:
-#         verbose_name_plural = 'Price_List'
-#
-#
-# # Price List
-# class ItemPrice(models.Model):
-#     # PRICELIST = (
-#     #     ('مفرد', 'مفرد'),
-#     #     ('جملة', 'جملة'),
-#     #
-#     #     ('شراء', 'شراء'),
-#     # )
-#
-#     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-#     price_list = models.ForeignKey(Price_List, on_delete=models.CASCADE)
-#     item_price = models.FloatField()
-#
-#     class Meta:
-#         verbose_name_plural = '6. Item Price'
-#
-#     def __str__(self):
-#         return f'{self.item_price},{self.price_list}'
-
-
 # Purchase Invoice
 class Purchase(models.Model):
     invoice_number = models.CharField(max_length=8, unique=True, editable=False)
@@ -192,19 +171,19 @@ class SaleItem(models.Model):
 
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     qty = models.PositiveSmallIntegerField(default=1)
-    note = models.CharField(max_length=100, blank=True)
-
+    # item_price = models.ForeignKey(ItemPrice, on_delete=models.CASCADE)
+    # price = models.FloatField()
+    sub_total = models.FloatField(validators=[MinValueValidator(0.01)], default=0)
+    total_amt = models.FloatField(validators=[MinValueValidator(0.01)], default=0, editable=False)
+    sale_date = models.DateTimeField(auto_now_add=True)
     discount_type = models.CharField(max_length=10, choices=(
         ('amount', 'Amount'),
         ('percentage', 'Percentage')
     ), blank=True)
     discount_value = models.FloatField(blank=True, null=True)
 
-    total_amt = models.FloatField(editable=False, default=0)
-    sale_date = models.DateTimeField(auto_now_add=True)
-
     def save(self, *args, **kwargs):
-
+        self.sub_total = self.item.price * self.qty
         if self.discount_type == 'amount' and self.discount_value is not None:
             discount = self.discount_value
         elif self.discount_type == 'percentage' and self.discount_value is not None:
@@ -243,17 +222,26 @@ class SaleItem(models.Model):
             total_bal_qty=totalBal
         )
 
+    def clean(self):
+        if self.item.price_list != 'مفرد':
+            raise ValidationError('Price list should  be " مفرد or جملة"')
+        if not self.discount_type and self.discount_value:
+            raise ValidationError('Please select a discount type')
+
+    class Meta:
+        verbose_name_plural = '9. Sales Item'
+
 
 # Purchased Item
 class PurchaseItem(models.Model):
     purchase_invoice = models.ForeignKey(Purchase, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    qty = models.FloatField()
+    qty = models.FloatField(validators=[MinValueValidator(0.01)], default=0)
     # item_price = models.ForeignKey(ItemPrice, on_delete=models.CASCADE)
     # price = models.FloatField()
     total_amt = models.FloatField(editable=False, default=0)
     pur_date = models.DateTimeField(auto_now_add=True)
-    note = models.TextField(blank=True)
+    note = models.CharField(max_length=100,blank=True)
 
     def save(self, *args, **kwargs):
         self.total_amt = self.qty * self.item.price
