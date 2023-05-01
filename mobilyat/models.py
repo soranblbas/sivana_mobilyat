@@ -50,7 +50,7 @@ class SaleInvoice(models.Model):
     note = models.CharField(max_length=100, blank=True)
 
     class Meta:
-        verbose_name_plural = '3. پسولەی فرۆشتن'
+        verbose_name_plural = '3. Sales Invoice'
 
     def save(self, *args, **kwargs):
         if not self.invoice_number:
