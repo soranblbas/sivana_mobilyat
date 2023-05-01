@@ -16,7 +16,7 @@ class Vendor(models.Model):
     note = models.TextField(blank=True)
 
     class Meta:
-        verbose_name_plural = '1. Vendors'
+        verbose_name_plural = '1. کۆمپانیاکان'
 
     def __str__(self):
         return self.full_name
@@ -30,7 +30,7 @@ class Customer(models.Model):
     city = models.CharField(max_length=50, blank=True)
 
     class Meta:
-        verbose_name_plural = '2. Customers'
+        verbose_name_plural = '2. کڕیار'
 
     def __str__(self):
         return self.customer_name
@@ -50,12 +50,19 @@ class SaleInvoice(models.Model):
     note = models.CharField(max_length=100, blank=True)
 
     class Meta:
-        verbose_name_plural = '3. Sales Invoice'
+        verbose_name_plural = '3. پسولەی فرۆشتن'
 
     def save(self, *args, **kwargs):
         if not self.invoice_number:
-            # Generate a random 8 character invoice number
-            self.invoice_number = secrets.token_hex(4).upper()
+            # Get the highest existing invoice number
+            highest = SaleInvoice.objects.aggregate(models.Max('invoice_number'))['invoice_number__max']
+            if highest is None:
+                # If no invoices exist yet, start at 100
+                self.invoice_number = 'SINV-100'
+            else:
+                # Increment the highest invoice number by 1 and add prefix
+                prefix, number = highest.split('-')
+                self.invoice_number = prefix + '-' + str(int(number) + 1)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -75,27 +82,55 @@ class SaleInvoice(models.Model):
 
 
 class Payment_Entry(models.Model):
-    invoice_number = models.CharField(max_length=8, unique=True, editable=False)
+    Qst = (
+        ('نقد', 'نقد'),
+        ('قستی ١', 'قستی ١'),
+        ('قستی ٢', 'قستی ٢'),
+        ('قستی ٣ ', ' قستی ٣'),
+        ('قستی ٤', 'قستی ٤'),
+        ('قستی ٥', 'قستی ٥'),
+        ('قستی ٦ ', ' قستی ٦'),
+        ('قستی ٧', 'قستی ٧'),
+        ('قستی ٨', 'قستی ٨'),
+        ('قستی ٩ ', ' قستی ٩'),
+        ('قستی ١٠', 'قستی ١٠'),
+        ('قستی ١١', 'قستی ١١'),
+        ('قستی ١٢ ', ' قستی ١٢'),
+    )
+
+    invoice_number = models.CharField(unique=True, editable=False, max_length=10)
     sales_invoice = models.ForeignKey(SaleInvoice, on_delete=models.CASCADE)
     # customer_name = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    q_type = models.CharField(max_length=10, verbose_name="Payment type", choices=Qst, blank=False)
 
-    paid_amount = models.FloatField(blank=False)
+    paid_amount = models.FloatField(validators=[MinValueValidator(0.01)],default=1)
+
     payment_date = models.DateTimeField(blank=False)
-    note = models.TextField(blank=True)
-
-    # old_balance = models.DecimalField(max_digits=20, decimal_places=2, default=0, editable=False)
-
-    def save(self, *args, **kwargs):
-        if not self.invoice_number:
-            # Generate a random 8 character invoice number
-            self.invoice_number = secrets.token_hex(4).upper()
-        super().save(*args, **kwargs)
+    note = models.CharField(max_length=100, blank=True)
+    old_balance = models.DecimalField(max_digits=20, decimal_places=2, default=0, editable=False)
 
     class Meta:
-        verbose_name_plural = '8. Payment Entry'
+        verbose_name_plural = '8. پارەدان'
 
     def __str__(self):
         return str(self.invoice_number)
+
+    def clean(self):
+        if not self.q_type:
+            raise ValidationError(' تکایە شێوازی پارەدان هەڵبژێرە؟')
+
+    def save(self, *args, **kwargs):
+        if not self.invoice_number:
+            # Get the highest existing invoice number
+            highest = Payment_Entry.objects.aggregate(models.Max('invoice_number'))['invoice_number__max']
+            if highest is None:
+                # If no invoices exist yet, start at 100
+                self.invoice_number = 'PINV-100'
+            else:
+                # Increment the highest invoice number by 1 and add prefix
+                prefix, number = highest.split('-')
+                self.invoice_number = prefix + '-' + str(int(number) + 1)
+        super().save(*args, **kwargs)
 
 
 # Sales Invoice
@@ -109,7 +144,7 @@ class Unit(models.Model):
     short_name = models.CharField(max_length=50)
 
     class Meta:
-        verbose_name_plural = '5. Units'
+        verbose_name_plural = '5. یەکەی پێوان'
 
     def __str__(self):
         return self.title
@@ -122,6 +157,7 @@ class Item(models.Model):
         ('جملة', 'جملة'),
 
         ('شراء', 'شراء'),
+        ('قسط', 'قسط'),
     )
 
     name = models.CharField(max_length=255)
@@ -142,7 +178,7 @@ class Purchase(models.Model):
     date = models.DateTimeField()
 
     class Meta:
-        verbose_name_plural = '8. Purchase Invoice'
+        verbose_name_plural = '8. زیادکردن بۆ کۆگا'
 
     def save(self, *args, **kwargs):
         if not self.invoice_number:
@@ -162,9 +198,6 @@ class Purchase(models.Model):
         return total_purchase_amount or 0
 
 
-# payment entry
-
-
 # Sales Item
 class SaleItem(models.Model):
     sales_invoice = models.ForeignKey(SaleInvoice, on_delete=models.CASCADE)
@@ -173,8 +206,8 @@ class SaleItem(models.Model):
     qty = models.PositiveSmallIntegerField(default=1)
     # item_price = models.ForeignKey(ItemPrice, on_delete=models.CASCADE)
     # price = models.FloatField()
-    sub_total = models.FloatField(validators=[MinValueValidator(0.01)], default=0)
-    total_amt = models.FloatField(validators=[MinValueValidator(0.01)], default=0, editable=False)
+    sub_total = models.FloatField(validators=[MinValueValidator(0.01)],default=0,editable=False)
+    total_amt = models.FloatField(validators=[MinValueValidator(0.01)],default=0,editable=False)
     sale_date = models.DateTimeField(auto_now_add=True)
     discount_type = models.CharField(max_length=10, choices=(
         ('amount', 'Amount'),
@@ -236,12 +269,12 @@ class SaleItem(models.Model):
 class PurchaseItem(models.Model):
     purchase_invoice = models.ForeignKey(Purchase, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    qty = models.FloatField(validators=[MinValueValidator(0.01)], default=0)
+    qty = models.FloatField(validators=[MinValueValidator(0.01)],default=0)
     # item_price = models.ForeignKey(ItemPrice, on_delete=models.CASCADE)
     # price = models.FloatField()
-    total_amt = models.FloatField(editable=False, default=0)
+    total_amt = models.FloatField(validators=[MinValueValidator(0.01)],default=0,editable=False)
     pur_date = models.DateTimeField(auto_now_add=True)
-    note = models.CharField(max_length=100,blank=True)
+    note = models.CharField(max_length=100, blank=True)
 
     def save(self, *args, **kwargs):
         self.total_amt = self.qty * self.item.price
@@ -279,7 +312,7 @@ class Inventory(models.Model):
     total_bal_qty = models.FloatField(default=0)
 
     class Meta:
-        verbose_name_plural = '10. Stock Details'
+        verbose_name_plural = '10. زانیاری کۆگا'
 
     def __str__(self):
         return str(self.item)
