@@ -27,7 +27,6 @@ INSTALLED_APPS = [
     'mobilyat.apps.MobilyatConfig',
     'django_filters',
     'storages',
-    'import_export',
 
 ]
 
