@@ -66,7 +66,7 @@ class SaleInvoice(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.customer_name} - {self.invoice_number} - {self.total_sales_amount()}"
+        return f"{self.total_sales_amount()} - {self.invoice_number} - {self.customer_name}"
 
     def total_sales_amount(self):
         total_sales_amount = self.saleitem_set.aggregate(total=Sum('total_amt'))['total']
