@@ -4,7 +4,6 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.html import format_html
-from import_export.admin import ImportExportModelAdmin
 from importlib_resources._common import _
 
 from .models import *
@@ -23,7 +22,7 @@ class SalesItem(admin.TabularInline):
 
 
 @admin.register(SaleInvoice)
-class ProfileAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+class ProfileAdmin(admin.ModelAdmin):
     inlines = [SalesItem]
 
     class Meta:
