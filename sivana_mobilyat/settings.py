@@ -13,7 +13,7 @@ SECRET_KEY = "django-insecure-twy!dzzbkqd**a@jw#(a@bbgm0_7#cj&oeq2cvwf*ebihr6g63
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['sivana.herokuapp.com','*']
+ALLOWED_HOSTS = ['sivana.herokuapp.com', '*']
 
 # Application definition
 
@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'mobilyat.apps.MobilyatConfig',
     'django_filters',
     'storages',
+    'import_export',
 
 ]
 
