@@ -34,6 +34,7 @@
             <th> اخر‌التسديدات</th>
             <th>المتبقي</th>
             <th>موبایل</th>
+            <th>تارىخ اخر تسديد</th>
 
         </tr>
         </thead>
@@ -44,9 +45,10 @@
                 <td>{{ data.total_invoice_amount }}</td>
                 <td>{{ data.total_paid_amount }}</td>
                 <td>{{ data.balance_before_last_payment }}</td>
-                <td>{{ data.last_payment }}</td>
+                <td>{{ data.last_payment_amount }}</td>
                 <td>{{ data.actual_credit }}</td>
                 <td>{{ data.phone_number }}</td>
+                <td>{{ data.last_payment_date }}</td>
 
             </tr>
         {% endfor %}
@@ -60,8 +62,8 @@
 
         <th style="background-color: #e8c3c7"></th>
         <th style="background-color: #e8c3c7"></th>
-  <th></th>
-
+        <th></th>
+        <th></th>
         </tfoot>
 
 

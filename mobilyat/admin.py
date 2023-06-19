@@ -108,7 +108,37 @@ class CustomerPagination(admin.ModelAdmin):
 
 @admin.register(Payment_Entry)
 class CustomerPagination(admin.ModelAdmin):
-    list_display = ('invoice_number', 'sales_invoice', 'paid_amount', 'payment_date', 'note',)
+    raw_id_fields = ['sales_invoice']
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "sales_invoice":
+            kwargs["queryset"] = SaleInvoice.objects.select_related('customer_name')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+        try:
+            search_term_as_int = int(search_term)
+            queryset |= self.model.objects.filter(sales_invoice_id=search_term_as_int)
+        except ValueError:
+            queryset |= self.model.objects.filter(sales_invoice__customer_name__customer_name__icontains=search_term)
+        return queryset, use_distinct
+
+    def sales_invoice_display(self, obj):
+        if obj.sales_invoice:
+            url = reverse("admin:mobilyat_saleinvoice_change", args=[obj.sales_invoice.pk])
+            return format_html('<a href="{}">{}</a>', url, obj.sales_invoice)
+        return None
+
+    sales_invoice_display.short_description = 'Sales Invoice'
+    sales_invoice_display.admin_order_field = 'sales_invoice'
+
+    list_display = ('invoice_number', 'sales_invoice_display', 'paid_amount', 'payment_date', 'note')
+    search_fields = ['invoice_number', 'sales_invoice__customer_name__customer_name']
+
+
+
+    # list_display = ('invoice_number', 'sales_invoice', 'paid_amount', 'payment_date', 'note',)
     # list_display_links = ['purchase', 'sale', ]
 
 

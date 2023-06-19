@@ -127,10 +127,15 @@ class Payment_Entry(models.Model):
                 # If no invoices exist yet, start at 100
                 self.invoice_number = 'PINV-100'
             else:
-                # Increment the highest invoice number by 1 and add prefix
-                prefix, number = highest.split('-')
-                self.invoice_number = prefix + '-' + str(int(number) + 1)
-        super().save(*args, **kwargs)
+                # Split the highest invoice number into prefix and number
+                parts = highest.split('-')
+                prefix = parts[0]
+                number = int(parts[1]) if len(parts) > 1 else 0
+
+                # Increment the number part and construct the new invoice number
+                self.invoice_number = f'{prefix}-{number + 1}'
+
+        super(Payment_Entry, self).save(*args, **kwargs)
 
 
 # Sales Invoice

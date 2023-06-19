@@ -110,6 +110,9 @@ def customer_balance(request):
     return render(request, 'mobilyat/reports/customer_balance.html', context)
 
 
+from django.db.models import Max
+
+
 def customer_total_report_summary(request):
     customer_ids = SaleItem.objects.values_list('sales_invoice__customer_name_id', flat=True).distinct()
     c_balance_report = {}
@@ -127,13 +130,16 @@ def customer_total_report_summary(request):
         actual_credit = total_invoice_amount - total_paid_amount
 
         last_payment = payments.first()
-        balance_before_last_payment = actual_credit + last_payment.paid_amount if last_payment else actual_credit
+        last_payment_amount = last_payment.paid_amount if last_payment else 0
+        last_payment_date = last_payment.payment_date if last_payment else None
+        balance_before_last_payment = actual_credit + last_payment_amount if last_payment else actual_credit
 
         c_balance_report[customer_name] = {
             'total_invoice_amount': total_invoice_amount,
             'total_paid_amount': total_paid_amount,
             'actual_credit': actual_credit,
-            'last_payment': last_payment.paid_amount if last_payment else 0,
+            'last_payment_amount': last_payment_amount,
+            'last_payment_date': last_payment_date,
             'balance_before_last_payment': balance_before_last_payment,
             'phone_number': customer_mobile
         }
