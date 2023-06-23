@@ -47,6 +47,7 @@ class ProfileAdmin(admin.ModelAdmin):
     list_display = (
         'invoice_number', 'customer_name', 'total_sub_amount', 'total_discount_amount', 'total_sales_amount', 'date')
     list_filter = ('status',)
+    search_fields = ('customer_name__customer_name',)
 
 
 class PurchasesItem(admin.TabularInline):
@@ -127,15 +128,15 @@ class CustomerPagination(admin.ModelAdmin):
     def sales_invoice_display(self, obj):
         if obj.sales_invoice:
             url = reverse("admin:mobilyat_saleinvoice_change", args=[obj.sales_invoice.pk])
-            return format_html('<a href="{}">{}</a>', url, obj.sales_invoice)
+            customer_name = obj.sales_invoice.customer_name.customer_name
+            return format_html('<a href="{}">{}</a>', url, customer_name)
         return None
 
     sales_invoice_display.short_description = 'Sales Invoice'
     sales_invoice_display.admin_order_field = 'sales_invoice'
 
     list_display = ('invoice_number', 'sales_invoice_display', 'paid_amount', 'payment_date', 'note')
-    search_fields = ['invoice_number', 'sales_invoice__customer_name__customer_name']
-
+    search_fields = ['sales_invoice__customer_name__customer_name']
 
 
     # list_display = ('invoice_number', 'sales_invoice', 'paid_amount', 'payment_date', 'note',)
