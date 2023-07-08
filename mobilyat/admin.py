@@ -138,10 +138,11 @@ class CustomerPagination(admin.ModelAdmin):
     list_display = ('invoice_number', 'sales_invoice_display', 'paid_amount', 'payment_date', 'note')
     search_fields = ['sales_invoice__customer_name__customer_name']
 
-
     # list_display = ('invoice_number', 'sales_invoice', 'paid_amount', 'payment_date', 'note',)
     # list_display_links = ['purchase', 'sale', ]
 
+
+admin.site.register(JournalEntry)
 
 admin.site.register(Vendor)
 admin.site.register(Unit)

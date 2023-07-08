@@ -77,7 +77,6 @@
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
 
 
-
 <script type="text/javascript">
 
 
@@ -138,7 +137,7 @@
 
             dom: 'Bfrtip',
             buttons: [
-                 'excelHtml5',
+                'excelHtml5',
                 {
                     extend: 'print',
                     footer: true,
@@ -185,7 +184,7 @@
 
             dom: 'Bfrtip',
             buttons: [
-                 'excelHtml5',
+                'excelHtml5',
                 {
                     extend: 'print',
                     footer: true,
@@ -233,7 +232,7 @@
 
             dom: 'Bfrtip',
             buttons: [
-                 'excelHtml5',
+                'excelHtml5',
                 {
                     extend: 'print',
                     footer: true,
@@ -281,7 +280,7 @@
 
             dom: 'Bfrtip',
             buttons: [
-                 'excelHtml5',
+                'excelHtml5',
                 {
                     extend: 'print',
                     footer: true,
@@ -329,7 +328,7 @@
             "pageLength": 100,
             dom: 'Bfrtip',
             buttons: [
-                 'excelHtml5',
+                'excelHtml5',
                 {
                     extend: 'print',
                     footer: true,
@@ -379,7 +378,7 @@
 
             dom: 'Bfrtip',
             buttons: [
-                 'excelHtml5',
+                'excelHtml5',
                 {
                     extend: 'print',
                     footer: true,
@@ -427,7 +426,7 @@
 
             dom: 'Bfrtip',
             buttons: [
-                 'excelHtml5',
+                'excelHtml5',
                 {
                     extend: 'print',
                     footer: true,
@@ -471,6 +470,55 @@
                 }
             ],
         });
+        $('#expense').DataTable({
+
+            dom: 'Bfrtip',
+            buttons: [
+                'excelHtml5',
+                {
+                    extend: 'print',
+                    footer: true,
+                    title: '<center><p> ملخص المصاريف </p></center>',
+
+                    customize: function (win) {
+                        $(win.document.body)
+                            .css('font-size', '10pt')
+                            .prepend(
+                                {#'<img src="http://datatables.net/media/images/logo-fade.png" style="position:relative; top:0; left:0;" />'#}
+                            );
+
+                        $(win.document.body).find('table')
+                            .addClass('compact')
+                            .css('font-size', 'inherit');
+                    }
+                }
+            ],
+
+
+            drawCallback: function () {
+                var api = this.api();
+                var sum = 0;
+                var formated = 0;
+                //to show first th
+                $(api.column(0).footer()).html('Total');
+
+                for (var i = 2; i <= 2; i++) {
+                    sum = api.column(i, {page: 'current'}).data().sum();
+
+                    //to format this sum
+                    formated = parseFloat(sum).toLocaleString(undefined, {minimumFractionDigits: 2});
+                    $(api.column(i).footer()).html('' + formated);
+                }
+
+            },
+            columnDefs: [
+                //{targets: 0, visible:false},
+                {
+                    targets: 1, className: "my-class"
+                }
+            ],
+        });
+
     });
 
 

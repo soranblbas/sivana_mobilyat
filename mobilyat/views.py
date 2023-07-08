@@ -160,3 +160,12 @@ def item_balance(request):
             item['balance'] = item['pur_qty']
     context = {'items': items}
     return render(request, 'mobilyat/reports/item_balance.html', context)
+
+
+def journal_entry_list(request):
+    t_journal_entry = JournalEntry.objects.select_related().count()
+    j_total_amount = JournalEntry.objects.values_list().aggregate(Sum('amount'))
+    entries = JournalEntry.objects.select_related()
+    context = {'t_journal_entry': t_journal_entry, 'j_total_amount': j_total_amount, 'entries': entries}
+
+    return render(request, 'mobilyat/reports/journal_entry_list.html', context)
